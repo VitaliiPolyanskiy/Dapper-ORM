@@ -6,7 +6,7 @@
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public int? Age { get; set; }
-        public float? GPA { get; set; }
-        public int AcademyGroupId { get; set; }
+        public float? PointAverage { get; set; }
+        public int AcademyGroup_Id { get; set; }
     }
 }

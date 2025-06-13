@@ -156,15 +156,15 @@ namespace DapperAcademyGroup
             using (IDbConnection db = new SqlConnection(connectionString))
             {
                 var students = db.Query<StudentViewModel>(
-                    "SELECT Students.FirstName, Students.LastName, Students.Age, Students.GPA, AcademyGroups.Name " +
-                    "FROM AcademyGroups INNER JOIN Students ON AcademyGroups.Id = Students.AcademyGroupId");
+                    "SELECT Students.FirstName, Students.LastName, Students.Age, Students.PointAverage, AcademyGroups.Name " +
+                    "FROM AcademyGroups INNER JOIN Students ON AcademyGroups.Id = Students.AcademyGroup_Id");
                 int iter = 0;
                 foreach (var st in students)
                 {
                     Console.Write($"Студент #{++iter}{st.FirstName,15}");
                     Console.Write($"{st.LastName,15}");
                     Console.Write($"{st.Age,10}");
-                    Console.Write($"{st.GPA,10}");
+                    Console.Write($"{st.PointAverage,10}");
                     Console.WriteLine($"{st.Name,10}");
                 }
                 Console.WriteLine();
@@ -175,9 +175,9 @@ namespace DapperAcademyGroup
                     Console.Write($"Студент #{++iter}{st.FirstName,15}");
                     Console.Write($"{st.LastName,15}");
                     Console.Write($"{st.Age,10}");
-                    Console.Write($"{st.GPA,10}");
-                    var group = db.QueryFirstOrDefault<AcademyGroup>("SELECT * FROM AcademyGroups WHERE Id = @AcademyGroupId", 
-                        new {st.AcademyGroupId});
+                    Console.Write($"{st.PointAverage,10}");
+                    var group = db.QueryFirstOrDefault<AcademyGroup>("SELECT * FROM AcademyGroups WHERE Id = @AcademyGroup_Id", 
+                        new {st.AcademyGroup_Id});
                     Console.WriteLine($"{group?.Name,10}");
                 }
             }
@@ -193,7 +193,7 @@ namespace DapperAcademyGroup
                 Console.WriteLine("Введите порядковый номер группы: ");
                 int number = int.Parse(Console.ReadLine()!);
                 var group = db.Query<AcademyGroup>("SELECT * FROM AcademyGroups").ToList()[number - 1];
-                var students = db.Query<Student>("SELECT * FROM Students WHERE AcademyGroupId = @Id",
+                var students = db.Query<Student>("SELECT * FROM Students WHERE AcademyGroup_Id = @Id",
                     new { group.Id });
                 int iter = 0;
                 foreach (var st in students)
@@ -201,7 +201,7 @@ namespace DapperAcademyGroup
                     Console.Write($"Студент #{++iter}{st.FirstName,15}");
                     Console.Write($"{st.LastName,15}");
                     Console.Write($"{st.Age,10}");
-                    Console.Write($"{st.GPA,10}");
+                    Console.Write($"{st.PointAverage,10}");
                     Console.WriteLine($"{group?.Name,10}");
                 }
             }
@@ -234,11 +234,11 @@ namespace DapperAcademyGroup
                 Console.WriteLine("Введите порядковый номер группы: ");
                 int number = int.Parse(Console.ReadLine()!);
                 var group = db.Query<AcademyGroup>("SELECT * FROM AcademyGroups").ToList()[number - 1];
-                var student = new Student { FirstName = firstname, LastName = lastname, Age = age, 
-                    GPA = gpa, AcademyGroupId = group.Id };
+                var student = new Student { FirstName = firstname, LastName = lastname, Age = age,
+                    PointAverage = gpa, AcademyGroup_Id = group.Id };
 
-                var sqlQuery = "INSERT INTO Students (FirstName, LastName, Age, GPA, AcademyGroupId) " +
-                    "VALUES(@FirstName, @LastName, @Age, @GPA, @AcademyGroupId)";
+                var sqlQuery = "INSERT INTO Students (FirstName, LastName, Age, PointAverage, AcademyGroup_Id) " +
+                    "VALUES(@FirstName, @LastName, @Age, @PointAverage, @AcademyGroup_Id)";
                 number = db.Execute(sqlQuery, student);
                 if (number != 0)
                     Console.WriteLine("Студент успешно добавлен!");
@@ -277,10 +277,10 @@ namespace DapperAcademyGroup
                 student.FirstName = firstname;
                 student.LastName = lastname;
                 student.Age = age;
-                student.GPA = gpa;
-                student.AcademyGroupId = group.Id;
+                student.PointAverage = gpa;
+                student.AcademyGroup_Id = group.Id;
                 var sqlQuery = "UPDATE Students SET FirstName = @FirstName, LastName = @LastName, Age = @Age, " +
-                    "GPA = @GPA, AcademyGroupId = @AcademyGroupId WHERE Id = @Id";
+                    "PointAverage = @PointAverage, AcademyGroup_Id = @AcademyGroup_Id WHERE Id = @Id";
                 number = db.Execute(sqlQuery, student);
                 if (number != 0)
                     Console.WriteLine("Студент успешно изменен!");
