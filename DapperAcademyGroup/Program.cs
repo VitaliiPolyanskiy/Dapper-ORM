@@ -1,18 +1,20 @@
 ﻿using Dapper;
 using Microsoft.Extensions.Configuration;
 using System.Data;
-using System.Data.SqlClient;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.Data.SqlClient;
+using System.Text;
 
 namespace DapperAcademyGroup
 {
-
     class MainClass
     {
         static string? connectionString;
 
         static void Main()
         {
+            Console.OutputEncoding = Encoding.UTF8;
+            Console.InputEncoding = Encoding.UTF8;
+
             var builder = new ConfigurationBuilder();
             string path = Directory.GetCurrentDirectory();
             builder.SetBasePath(path);
@@ -25,16 +27,16 @@ namespace DapperAcademyGroup
                 while (true)
                 {
                     Console.Clear();
-                    Console.WriteLine("1. Показать все группы");
-                    Console.WriteLine("2. Добавить группу");
-                    Console.WriteLine("3. Редактировать группу");
-                    Console.WriteLine("4. Удалить группу");
-                    Console.WriteLine("5. Показать всех студентов");
-                    Console.WriteLine("6. Показать студентов конкретной группы");
-                    Console.WriteLine("7. Добавить студента");
-                    Console.WriteLine("8. Редактировать студента");
-                    Console.WriteLine("9. Удалить студента");
-                    Console.WriteLine("0. Выход");
+                    Console.WriteLine("1. Показати всі групи");
+                    Console.WriteLine("2. Додати групу");
+                    Console.WriteLine("3. Редагувати групу");
+                    Console.WriteLine("4. Видалити групу");
+                    Console.WriteLine("5. Показати всіх студентів");
+                    Console.WriteLine("6. Показати студентів конкретної групи");
+                    Console.WriteLine("7. Додати студента");
+                    Console.WriteLine("8. Редагувати студента");
+                    Console.WriteLine("9. Видалити студента");
+                    Console.WriteLine("0. Вихід");
                     int result = int.Parse(Console.ReadLine()!);
                     switch (result)
                     {
@@ -67,7 +69,7 @@ namespace DapperAcademyGroup
                             break;
                         case 0:
                             return;
-                    };
+                    }
                 }
             }
             catch (Exception ex)
@@ -84,52 +86,52 @@ namespace DapperAcademyGroup
                 var groups = db.Query<AcademyGroup>("SELECT * FROM AcademyGroups");
                 int iter = 0;
                 foreach (var group in groups)
-                    Console.WriteLine($"Группа #{++iter} {group.Name}");
+                    Console.WriteLine($"Група #{++iter} {group.Name}");
             }
             Console.ReadKey();
         }
 
         static void AddNewGroup()
         {
-            Console.Clear();           
+            Console.Clear();
             using (IDbConnection db = new SqlConnection(connectionString))
             {
                 string groupname;
                 do
                 {
-                    Console.WriteLine("Введите название новой группы: ");
+                    Console.WriteLine("Введіть назву нової групи: ");
                     groupname = Console.ReadLine()!;
                 }
-                while (groupname.Trim().IsNullOrEmpty());
+                while (string.IsNullOrEmpty(groupname.Trim()));
                 var academygroup = new AcademyGroup { Name = groupname };
                 var sqlQuery = "INSERT INTO AcademyGroups (Name) VALUES(@Name)";
                 int number = db.Execute(sqlQuery, academygroup);
                 if (number != 0)
-                    Console.WriteLine($"Группа успешно добавлена!");
+                    Console.WriteLine($"Групу успішно додано!");
             }
             Console.ReadKey();
         }
 
         static void EditGroup()
         {
-            Console.Clear();          
+            Console.Clear();
             using (IDbConnection db = new SqlConnection(connectionString))
             {
-                Console.WriteLine("Введите порядковый номер группы: ");
+                Console.WriteLine("Введіть порядковий номер групи: ");
                 int number = int.Parse(Console.ReadLine()!);
                 var group = db.Query<AcademyGroup>("SELECT * FROM AcademyGroups").ToList()[number - 1];
                 string groupname;
                 do
                 {
-                    Console.WriteLine("Введите новое название группы: ");
+                    Console.WriteLine("Введіть нову назву групи: ");
                     groupname = Console.ReadLine()!;
                 }
-                while (groupname.Trim().IsNullOrEmpty());
+                while (string.IsNullOrEmpty(groupname.Trim()));
                 group.Name = groupname;
                 var sqlQuery = "UPDATE AcademyGroups SET Name = @Name WHERE Id = @Id";
                 number = db.Execute(sqlQuery, group);
                 if (number != 0)
-                    Console.WriteLine("Группа успешно изменена!");
+                    Console.WriteLine("Групу успішно змінено!");
             }
             Console.ReadKey();
         }
@@ -139,13 +141,13 @@ namespace DapperAcademyGroup
             Console.Clear();
             using (IDbConnection db = new SqlConnection(connectionString))
             {
-                Console.WriteLine("Введите порядковый номер группы: ");
+                Console.WriteLine("Введіть порядковий номер групи: ");
                 int number = int.Parse(Console.ReadLine()!);
                 var group = db.Query<AcademyGroup>("SELECT * FROM AcademyGroups").ToList()[number - 1];
                 var sqlQuery = "DELETE FROM AcademyGroups WHERE Id = @id";
                 number = db.Execute(sqlQuery, new { group.Id });
                 if (number != 0)
-                    Console.WriteLine("Группа успешно удалена!");
+                    Console.WriteLine("Групу успішно видалено!");
             }
             Console.ReadKey();
         }
@@ -176,8 +178,8 @@ namespace DapperAcademyGroup
                     Console.Write($"{st.LastName,15}");
                     Console.Write($"{st.Age,10}");
                     Console.Write($"{st.PointAverage,10}");
-                    var group = db.QueryFirstOrDefault<AcademyGroup>("SELECT * FROM AcademyGroups WHERE Id = @AcademyGroup_Id", 
-                        new {st.AcademyGroup_Id});
+                    var group = db.QueryFirstOrDefault<AcademyGroup>("SELECT * FROM AcademyGroups WHERE Id = @AcademyGroup_Id",
+                        new { st.AcademyGroup_Id });
                     Console.WriteLine($"{group?.Name,10}");
                 }
             }
@@ -190,7 +192,7 @@ namespace DapperAcademyGroup
 
             using (IDbConnection db = new SqlConnection(connectionString))
             {
-                Console.WriteLine("Введите порядковый номер группы: ");
+                Console.WriteLine("Введіть порядковий номер групи: ");
                 int number = int.Parse(Console.ReadLine()!);
                 var group = db.Query<AcademyGroup>("SELECT * FROM AcademyGroups").ToList()[number - 1];
                 var students = db.Query<Student>("SELECT * FROM Students WHERE AcademyGroup_Id = @Id",
@@ -211,37 +213,43 @@ namespace DapperAcademyGroup
         static void AddNewStudent()
         {
             Console.Clear();
-            
+
             using (IDbConnection db = new SqlConnection(connectionString))
             {
                 string firstname, lastname;
                 do
                 {
-                    Console.WriteLine("Введите имя студента: ");
+                    Console.WriteLine("Введіть ім'я студента: ");
                     firstname = Console.ReadLine()!;
                 }
-                while (firstname.Trim().IsNullOrEmpty());
+                while (string.IsNullOrEmpty(firstname.Trim()));
                 do
                 {
-                    Console.WriteLine("Введите фамилию студента: ");
+                    Console.WriteLine("Введіть прізвище студента: ");
                     lastname = Console.ReadLine()!;
                 }
-                while (lastname.Trim().IsNullOrEmpty());
-                Console.WriteLine("Введите возраст студента: ");
+                while (string.IsNullOrEmpty(lastname.Trim()));
+                Console.WriteLine("Введіть вік студента: ");
                 int age = int.Parse(Console.ReadLine()!);
-                Console.WriteLine("Введите средний балл студента: ");
+                Console.WriteLine("Введіть середній бал студента: ");
                 float gpa = float.Parse(Console.ReadLine()!);
-                Console.WriteLine("Введите порядковый номер группы: ");
+                Console.WriteLine("Введіть порядковий номер групи: ");
                 int number = int.Parse(Console.ReadLine()!);
                 var group = db.Query<AcademyGroup>("SELECT * FROM AcademyGroups").ToList()[number - 1];
-                var student = new Student { FirstName = firstname, LastName = lastname, Age = age,
-                    PointAverage = gpa, AcademyGroup_Id = group.Id };
+                var student = new Student
+                {
+                    FirstName = firstname,
+                    LastName = lastname,
+                    Age = age,
+                    PointAverage = gpa,
+                    AcademyGroup_Id = group.Id
+                };
 
                 var sqlQuery = "INSERT INTO Students (FirstName, LastName, Age, PointAverage, AcademyGroup_Id) " +
                     "VALUES(@FirstName, @LastName, @Age, @PointAverage, @AcademyGroup_Id)";
                 number = db.Execute(sqlQuery, student);
                 if (number != 0)
-                    Console.WriteLine("Студент успешно добавлен!");
+                    Console.WriteLine("Студента успішно додано!");
             }
             Console.ReadKey();
         }
@@ -251,27 +259,27 @@ namespace DapperAcademyGroup
             Console.Clear();
             using (IDbConnection db = new SqlConnection(connectionString))
             {
-                Console.WriteLine("Введите порядковый номер студента: ");
+                Console.WriteLine("Введіть порядковий номер студента: ");
                 int number = int.Parse(Console.ReadLine()!);
                 var student = db.Query<Student>("SELECT * FROM Students").ToList()[number - 1];
                 string firstname, lastname;
                 do
                 {
-                    Console.WriteLine("Введите имя студента: ");
+                    Console.WriteLine("Введіть ім'я студента: ");
                     firstname = Console.ReadLine()!;
                 }
-                while (firstname.Trim().IsNullOrEmpty());
+                while (string.IsNullOrEmpty(firstname.Trim()));
                 do
                 {
-                    Console.WriteLine("Введите фамилию студента: ");
+                    Console.WriteLine("Введіть прізвище студента: ");
                     lastname = Console.ReadLine()!;
                 }
-                while (lastname.Trim().IsNullOrEmpty());
-                Console.WriteLine("Введите возраст студента: ");
+                while (string.IsNullOrEmpty(lastname.Trim()));
+                Console.WriteLine("Введіть вік студента: ");
                 int age = int.Parse(Console.ReadLine()!);
-                Console.WriteLine("Введите средний балл студента: ");
+                Console.WriteLine("Введіть średній бал студента: ");
                 float gpa = float.Parse(Console.ReadLine()!);
-                Console.WriteLine("Введите порядковый номер группы: ");
+                Console.WriteLine("Введіть порядковий номер групи: ");
                 number = int.Parse(Console.ReadLine()!);
                 var group = db.Query<AcademyGroup>("SELECT * FROM AcademyGroups").ToList()[number - 1];
                 student.FirstName = firstname;
@@ -283,8 +291,8 @@ namespace DapperAcademyGroup
                     "PointAverage = @PointAverage, AcademyGroup_Id = @AcademyGroup_Id WHERE Id = @Id";
                 number = db.Execute(sqlQuery, student);
                 if (number != 0)
-                    Console.WriteLine("Студент успешно изменен!");
-            }          
+                    Console.WriteLine("Дані студента успішно змінено!");
+            }
             Console.ReadKey();
         }
 
@@ -293,13 +301,13 @@ namespace DapperAcademyGroup
             Console.Clear();
             using (IDbConnection db = new SqlConnection(connectionString))
             {
-                Console.WriteLine("Введите порядковый номер студента: ");
+                Console.WriteLine("Введіть порядковий номер студента: ");
                 int number = int.Parse(Console.ReadLine()!);
                 var student = db.Query<Student>("SELECT * FROM Students").ToList()[number - 1];
                 var sqlQuery = "DELETE FROM Students WHERE Id = @id";
                 number = db.Execute(sqlQuery, new { student.Id });
                 if (number != 0)
-                    Console.WriteLine("Студент успешно удален!");
+                    Console.WriteLine("Студента успішно видалено!");
             }
             Console.ReadKey();
         }
